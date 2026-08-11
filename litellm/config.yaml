@@ -1,0 +1,16 @@
+model_list:
+  - model_name: research-agent-primary
+    litellm_params:
+      model: openrouter/openai/gpt-oss-20b:free
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: research-agent-fallback
+    litellm_params:
+      model: openrouter/openrouter/free
+      api_key: os.environ/OPENROUTER_API_KEY
+
+router_settings:
+  fallbacks:
+    - research-agent-primary:
+        - research-agent-fallback
+
