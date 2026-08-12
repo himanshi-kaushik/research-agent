@@ -6,4 +6,5 @@ python-dotenv
 httpx
 pytest
 litellm[proxy]==1.96.0
+claude-agent-sdk==0.2.136
 
