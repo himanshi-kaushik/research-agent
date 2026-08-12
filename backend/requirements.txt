@@ -7,4 +7,8 @@ httpx
 pytest
 litellm[proxy]==1.96.0
 claude-agent-sdk==0.2.136
+ddgs==9.14.4
+trafilatura==2.2.0
+beautifulsoup4==4.15.0
+pytest-asyncio
 
