@@ -6,8 +6,11 @@ from backend.app.agent.research_agent import (
     READ_TOOL,
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_TOOL,
+    SYNTHESIS_SYSTEM_PROMPT,
     build_research_options,
     research_topic,
+    validate_report,
+    _evidence_fallback_report,
 )
 
 
@@ -51,4 +54,47 @@ def test_prompt_requires_report_sections():
 def test_prompt_contains_followup_rules():
     assert "For follow-up questions:" in RESEARCH_SYSTEM_PROMPT
     assert "Do not search again" in RESEARCH_SYSTEM_PROMPT
-    
+
+
+def test_incomplete_report_is_rejected():
+    with pytest.raises(RuntimeError, match="incomplete research report"):
+        validate_report("I'm sorry, but I can't continue with this request.")
+
+
+def test_complete_report_is_accepted():
+    report = """# Research Report: Test
+
+## Executive Summary
+Summary.
+
+## Key Findings
+- Finding.
+
+## Detailed Analysis
+Analysis.
+
+## Limitations
+Limitations.
+
+## Sources
+1. https://example.com
+"""
+
+    assert validate_report(report) == report.strip()
+
+
+def test_synthesis_prompt_does_not_require_tools():
+    assert "cannot and must not call tools" in SYNTHESIS_SYSTEM_PROMPT
+    assert "Call search_web exactly twice" not in SYNTHESIS_SYSTEM_PROMPT
+
+
+def test_evidence_fallback_is_a_valid_report():
+    sources = [
+        {"title": "Source One", "url": "https://one.example", "text": "Evidence one " * 30},
+        {"title": "Source Two", "url": "https://two.example", "text": "Evidence two " * 30},
+    ]
+
+    report = _evidence_fallback_report("Test topic", sources)
+
+    assert validate_report(report) == report
+    assert "free language model was temporarily unavailable" in report
