@@ -13,4 +13,13 @@ export async function createResearch(topic) {
   return response.data
 }
 
+export async function createFollowUp(sessionId, question) {
+  const response = await api.post('/api/followup', {
+    session_id: sessionId,
+    question,
+  })
+
+  return response.data
+}
+
 export default api

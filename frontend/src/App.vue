@@ -11,13 +11,16 @@ import {
   WifiOff,
 } from 'lucide-vue-next'
 
-import api, { createResearch } from './services/api'
+import api, { createFollowUp, createResearch } from './services/api'
 
 const status = ref('checking')
 const topic = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const result = ref(null)
+const followUpQuestion = ref('')
+const followUpLoading = ref(false)
+const conversation = ref([])
 
 const sampleTopics = [
   'Benefits and limitations of solar energy adoption',
@@ -29,6 +32,10 @@ const renderedReport = computed(() => {
   if (!result.value?.report) return ''
   return DOMPurify.sanitize(marked.parse(result.value.report))
 })
+
+function renderMarkdown(value) {
+  return DOMPurify.sanitize(marked.parse(value || ''))
+}
 
 async function checkBackend() {
   status.value = 'checking'
@@ -58,6 +65,7 @@ async function submitResearch() {
   loading.value = true
   errorMessage.value = ''
   result.value = null
+  conversation.value = []
 
   try {
     result.value = await createResearch(cleanTopic)
@@ -67,6 +75,28 @@ async function submitResearch() {
       || 'The research request failed. Check that FastAPI and LiteLLM are running.'
   } finally {
     loading.value = false
+  }
+}
+
+async function submitFollowUp() {
+  const question = followUpQuestion.value.trim()
+  if (question.length < 3 || !result.value?.session_id) return
+
+  followUpLoading.value = true
+  errorMessage.value = ''
+  try {
+    const response = await createFollowUp(result.value.session_id, question)
+    conversation.value.push({
+      question: response.question,
+      answer: response.answer,
+    })
+    followUpQuestion.value = ''
+  } catch (error) {
+    console.error(error)
+    errorMessage.value = error.response?.data?.detail
+      || 'The follow-up question could not be answered.'
+  } finally {
+    followUpLoading.value = false
   }
 }
 
@@ -159,6 +189,32 @@ onMounted(checkBackend)
         <CheckCircle2 :size="25" />
       </div>
       <article class="markdown-body" v-html="renderedReport" />
+      <div class="followup-panel">
+        <h3>Continue this research</h3>
+        <p>Ask about the existing report or request new information. The agent will decide whether another web search is needed.</p>
+
+        <div v-if="conversation.length" class="conversation">
+          <div v-for="(turn, index) in conversation" :key="index" class="conversation-turn">
+            <p class="user-question"><strong>You:</strong> {{ turn.question }}</p>
+            <div class="markdown-body followup-answer" v-html="renderMarkdown(turn.answer)" />
+          </div>
+        </div>
+
+        <form class="followup-form" @submit.prevent="submitFollowUp">
+          <input
+            v-model="followUpQuestion"
+            type="text"
+            maxlength="1000"
+            placeholder="Ask a follow-up question"
+            :disabled="followUpLoading"
+          >
+          <button type="submit" :disabled="followUpLoading || followUpQuestion.trim().length < 3">
+            <LoaderCircle v-if="followUpLoading" :size="18" class="spinner" />
+            <Search v-else :size="18" />
+            {{ followUpLoading ? 'Answering...' : 'Ask follow-up' }}
+          </button>
+        </form>
+      </div>
     </section>
   </main>
 </template>

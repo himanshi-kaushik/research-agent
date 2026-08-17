@@ -26,7 +26,9 @@ User
   -> Vue display
 ```
 
-The Claude Agent SDK is integrated in demonstration workflows for tool selection, real tool execution and conversation context. The user-facing report workflow uses deterministic evidence collection followed by LiteLLM synthesis because this is more reliable and predictable with free models.
+The Claude Agent SDK is integrated into the user-facing workflow as well as the demonstration scripts. For new research it can select and execute the registered web tools. If a free model or SDK route fails, the application uses deterministic evidence collection followed by LiteLLM synthesis. This keeps the application available while retaining agent-controlled tool use as the primary path.
+
+Each completed report receives a session identifier. The backend stores the topic, report and recent follow-up turns. During a follow-up the SDK receives this context and decides whether it can answer directly or needs to call the web tools for new evidence.
 
 ## 3. Main Technical Decisions
 
@@ -64,7 +66,7 @@ The first version uses a normal request-response API because it is simpler to im
 
 ### SQLite deferred
 
-Active conversation context is demonstrated through the Agent SDK, but persistent SQLite history is left as an extension. This keeps the initial assignment focused on agent orchestration, tool calling and research quality.
+Active conversation context is integrated through an in-memory session store. Persistent SQLite history remains an extension for deployments that need conversations to survive a server restart.
 
 ## 4. Reliability and Safety
 
@@ -90,4 +92,3 @@ The backend test suite covers search validation, URL safety, extraction, researc
 - Free services require fallbacks, timeouts and output validation.
 - Separating frontend, API, tools and model access makes the project easier to test and modify.
 - A local Git commit becomes visible on GitHub only after it is pushed to the configured remote.
-

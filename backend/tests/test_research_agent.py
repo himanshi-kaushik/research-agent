@@ -7,7 +7,9 @@ from backend.app.agent.research_agent import (
     RESEARCH_SYSTEM_PROMPT,
     SEARCH_TOOL,
     SYNTHESIS_SYSTEM_PROMPT,
+    FOLLOWUP_SYSTEM_PROMPT,
     build_research_options,
+    build_followup_options,
     research_topic,
     validate_report,
     _evidence_fallback_report,
@@ -54,6 +56,15 @@ def test_prompt_requires_report_sections():
 def test_prompt_contains_followup_rules():
     assert "For follow-up questions:" in RESEARCH_SYSTEM_PROMPT
     assert "Do not search again" in RESEARCH_SYSTEM_PROMPT
+
+
+def test_followup_agent_can_choose_web_tools():
+    options = build_followup_options()
+    assert SEARCH_TOOL in options.allowed_tools
+    assert READ_TOOL in options.allowed_tools
+    assert "web-tools" in options.mcp_servers
+    assert "If it is sufficient" in FOLLOWUP_SYSTEM_PROMPT
+    assert "use search_web and read_webpage" in FOLLOWUP_SYSTEM_PROMPT
 
 
 def test_incomplete_report_is_rejected():

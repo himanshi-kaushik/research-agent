@@ -9,6 +9,8 @@ A source-backed web research application built with the Claude Agent SDK, LiteLL
 - Downloads webpages asynchronously with HTTPX.
 - Extracts main article text with Trafilatura and uses BeautifulSoup as a fallback.
 - Demonstrates Claude Agent SDK tool execution and conversation context.
+- Supports follow-up questions through a saved research session.
+- Lets the Agent SDK decide whether a follow-up needs another web search.
 - Uses LiteLLM as the model gateway and OpenRouter as the model provider.
 - Prioritizes government, international, university and established organization sources.
 - Produces structured Markdown reports with inline source references.
@@ -195,9 +197,24 @@ Successful response:
 ```json
 {
   "topic": "Benefits and limitations of solar energy adoption",
-  "report": "# Research Report: ..."
+  "report": "# Research Report: ...",
+  "session_id": "generated-session-id"
 }
 ```
+
+### Ask a follow-up question
+
+```http
+POST /api/followup
+Content-Type: application/json
+
+{
+  "session_id": "generated-session-id",
+  "question": "Which limitation is most important?"
+}
+```
+
+The backend restores the original topic, report and recent conversation turns. The Agent SDK then decides whether the saved evidence is sufficient or whether it should call the web tools again.
 
 ## Testing
 
@@ -213,7 +230,7 @@ Build the frontend:
 npm.cmd --prefix frontend run build
 ```
 
-The current project contains 20 backend tests covering URL validation, extraction, orchestration rules, report validation, API validation, successful responses and safe failure handling.
+The current project contains 23 backend tests covering URL validation, extraction, orchestration rules, report validation, session context, API validation, successful responses and safe failure handling.
 
 ## Agent SDK Demonstrations
 
@@ -263,6 +280,7 @@ The fallback keeps the demonstration usable, but it is extractive and less polis
 - Free-model routing requires timeouts, validation and graceful fallbacks.
 - Dependency versions must be pinned when LiteLLM and FastAPI compatibility changes.
 - A local Git repository is separate from GitHub until a remote is connected and pushed.
+- Conversation context can be maintained by storing a session identifier with its report and recent turns.
 
 ## Deliverables
 
@@ -271,4 +289,3 @@ The fallback keeps the demonstration usable, but it is extractive and less polis
 - Automated tests
 - Structured research reports with source attribution
 - Architecture and key-learnings documentation
-
