@@ -1,4 +1,4 @@
-# Architecture, Tools and Key Learnings
+# Architecture and Tools
 
 ## 1. Project Overview
 
@@ -82,13 +82,3 @@ Active conversation context is integrated through an in-memory session store. Pe
 ## 5. Testing
 
 The backend test suite covers search validation, URL safety, extraction, research orchestration, report validation, request validation, successful API responses and failure handling. The Vue production build checks that the frontend compiles correctly.
-
-## 6. Key Learnings
-
-- An agent needs clear tool descriptions, stopping rules and usage limits.
-- Tool-capable models do not always execute multi-step loops reliably.
-- Deterministic retrieval combined with model synthesis is more dependable for free models.
-- Source quality, distinct-source selection and citations are as important as fluent writing.
-- Free services require fallbacks, timeouts and output validation.
-- Separating frontend, API, tools and model access makes the project easier to test and modify.
-- A local Git commit becomes visible on GitHub only after it is pushed to the configured remote.
